@@ -1,0 +1,44 @@
+# Binaries & executables
+*.exe
+Backend/server.exe
+
+# SQLite databases
+*.db
+*.db-journal
+Backend/mobile_app.db
+
+# Dependencies
+node_modules/
+Mobile/node_modules/
+
+# Expo & React Native
+.expo/
+Mobile/.expo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Secrets
+.env
+Backend/.env
+*.key
+*.json
+!package.json
+!tsconfig.json
+!app.json
+gcp-key.json
+service-account-key.json
+
+# Terraform local state and modules
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# OS files
+.DS_Store
+Thumbs.db

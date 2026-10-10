@@ -1,0 +1,7 @@
+server.exe
+*.exe
+mobile_app.db
+mobile_app.db-journal
+uploads/*
+!uploads/.gitkeep
+.env
