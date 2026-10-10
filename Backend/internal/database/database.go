@@ -23,7 +23,7 @@ func InitDB(cfg *config.Config) *gorm.DB {
 		Logger: logger.Default.LogMode(logger.Info),
 	}
 
-	if cfg.DatabaseURL != "" {
+	if cfg.DatabaseURL != "" && cfg.DatabaseURL != "sqlite" {
 		log.Printf("Connecting to PostgreSQL via DATABASE_URL...")
 		DB, err = gorm.Open(postgres.Open(cfg.DatabaseURL), gormConfig)
 		if err != nil {

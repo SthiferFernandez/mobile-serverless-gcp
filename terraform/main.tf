@@ -17,7 +17,7 @@ locals {
 }
 
 resource "google_project_service" "enabled_apis" {
-  for_each                   = toset(locals.services)
+  for_each                   = toset(local.services)
   project                    = var.project_id
   service                    = each.key
   disable_dependent_services = false
@@ -132,7 +132,7 @@ resource "google_sql_user" "user" {
 }
 
 locals {
-  computed_db_url = var.database_url != "" ? var.database_url : (
+  computed_db_url = (var.database_url != "" && var.database_url != "sqlite") ? var.database_url : (
     var.enable_cloud_sql ? "postgres://${var.db_user}:${var.db_password}@${google_sql_database_instance.postgres[0].public_ip_address}:5432/${var.db_name}?sslmode=disable" : ""
   )
 }

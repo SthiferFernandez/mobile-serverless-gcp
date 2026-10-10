@@ -58,16 +58,36 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Autenticación en Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Configurar gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+        run: |
+          cat << 'EOF' > /tmp/gcp-creds.json
+          ${{ secrets.GCP_SA_KEY }}
+          EOF
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
+          echo "CLOUDSDK_CORE_PROJECT=${{ env.GCP_PROJECT_ID }}" >> $GITHUB_ENV
+          CRED_TYPE=$(jq -r '.type' /tmp/gcp-creds.json)
+          if [ "$CRED_TYPE" = "authorized_user" ]; then
+            CLIENT_ID=$(jq -r '.client_id' /tmp/gcp-creds.json)
+            CLIENT_SECRET=$(jq -r '.client_secret' /tmp/gcp-creds.json)
+            REFRESH_TOKEN=$(jq -r '.refresh_token' /tmp/gcp-creds.json)
+            ACCESS_TOKEN=$(curl -s -X POST https://oauth2.googleapis.com/token \
+              -d "client_id=$CLIENT_ID" \
+              -d "client_secret=$CLIENT_SECRET" \
+              -d "refresh_token=$REFRESH_TOKEN" \
+              -d "grant_type=refresh_token" | jq -r '.access_token')
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          else
+            gcloud auth activate-service-account --key-file=/tmp/gcp-creds.json --project=${{ env.GCP_PROJECT_ID }}
+            ACCESS_TOKEN=$(gcloud auth print-access-token)
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          fi
 
       - name: Configurar Docker para Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+          echo "$CLOUDSDK_AUTH_ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin https://${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Verificar o Crear Repositorio Artifact Registry
         run: |
@@ -77,7 +97,7 @@ jobs:
           gcloud artifacts repositories create ${{ env.ARTIFACT_REGISTRY }} \
             --repository-format=docker \
             --location=${{ env.GCP_REGION }} \
-            --description="Docker repository para mobile backend" \
+            --description="Repositorio Docker para imagenes del Backend Go Fiber" \
             --project=${{ env.GCP_PROJECT_ID }}
 
       - name: Configurar Docker Buildx
@@ -116,18 +136,48 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Autenticación en Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          cat << 'EOF' > /tmp/gcp-creds.json
+          ${{ secrets.GCP_SA_KEY }}
+          EOF
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
+          echo "CLOUDSDK_CORE_PROJECT=${{ env.GCP_PROJECT_ID }}" >> $GITHUB_ENV
+          CRED_TYPE=$(jq -r '.type' /tmp/gcp-creds.json)
+          if [ "$CRED_TYPE" = "authorized_user" ]; then
+            CLIENT_ID=$(jq -r '.client_id' /tmp/gcp-creds.json)
+            CLIENT_SECRET=$(jq -r '.client_secret' /tmp/gcp-creds.json)
+            REFRESH_TOKEN=$(jq -r '.refresh_token' /tmp/gcp-creds.json)
+            ACCESS_TOKEN=$(curl -s -X POST https://oauth2.googleapis.com/token \
+              -d "client_id=$CLIENT_ID" \
+              -d "client_secret=$CLIENT_SECRET" \
+              -d "refresh_token=$REFRESH_TOKEN" \
+              -d "grant_type=refresh_token" | jq -r '.access_token')
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          else
+            gcloud auth activate-service-account --key-file=/tmp/gcp-creds.json --project=${{ env.GCP_PROJECT_ID }}
+            ACCESS_TOKEN=$(gcloud auth print-access-token)
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          fi
 
       - name: Configurar Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Sincronizar Repositorio Artifact Registry en Estado
+        run: |
+          terraform state show google_artifact_registry_repository.mobile_repo >/dev/null 2>&1 || \
+          terraform import google_artifact_registry_repository.mobile_repo projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/repositories/${{ env.ARTIFACT_REGISTRY }} || true
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
@@ -147,12 +197,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Autenticación en Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Configurar gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+        run: |
+          cat << 'EOF' > /tmp/gcp-creds.json
+          ${{ secrets.GCP_SA_KEY }}
+          EOF
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-creds.json" >> $GITHUB_ENV
+          echo "CLOUDSDK_CORE_PROJECT=${{ env.GCP_PROJECT_ID }}" >> $GITHUB_ENV
+          CRED_TYPE=$(jq -r '.type' /tmp/gcp-creds.json)
+          if [ "$CRED_TYPE" = "authorized_user" ]; then
+            CLIENT_ID=$(jq -r '.client_id' /tmp/gcp-creds.json)
+            CLIENT_SECRET=$(jq -r '.client_secret' /tmp/gcp-creds.json)
+            REFRESH_TOKEN=$(jq -r '.refresh_token' /tmp/gcp-creds.json)
+            ACCESS_TOKEN=$(curl -s -X POST https://oauth2.googleapis.com/token \
+              -d "client_id=$CLIENT_ID" \
+              -d "client_secret=$CLIENT_SECRET" \
+              -d "refresh_token=$REFRESH_TOKEN" \
+              -d "grant_type=refresh_token" | jq -r '.access_token')
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          else
+            gcloud auth activate-service-account --key-file=/tmp/gcp-creds.json --project=${{ env.GCP_PROJECT_ID }}
+            ACCESS_TOKEN=$(gcloud auth print-access-token)
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "CLOUDSDK_AUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+            echo "GOOGLE_OAUTH_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          fi
 
       - name: Desplegar en Cloud Run (gcloud run deploy)
         run: |
@@ -162,7 +232,6 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "PORT=8080,DB_TYPE=postgres,DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             --project ${{ env.GCP_PROJECT_ID }}
 
       - name: Obtener URLs de Acceso y Resumen de Despliegue
@@ -175,6 +244,14 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --project ${{ env.GCP_PROJECT_ID }} \
             --format 'value(status.url)')
+          GATEWAY_URL=$(gcloud api-gateway gateways describe mobile-api-gateway \
+            --location ${{ env.GCP_REGION }} \
+            --project ${{ env.GCP_PROJECT_ID }} \
+            --format 'value(defaultHostname)' || true)
           echo "URL Cloud Run: $CLOUD_RUN_URL"
-          echo "Health Check: $CLOUD_RUN_URL/health"
+          echo "Health Check:  $CLOUD_RUN_URL/health"
+          if [ -n "$GATEWAY_URL" ]; then
+            echo "URL API Gateway: https://$GATEWAY_URL"
+          fi
           echo "=================================================="
+          curl -s "$CLOUD_RUN_URL/health" || true
