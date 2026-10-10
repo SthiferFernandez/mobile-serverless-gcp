@@ -8,40 +8,6 @@
 **Base de Datos:** PostgreSQL (Docker) / SQLite (Local)  
 **Contenedores:** Docker & Docker Compose  
 
----
-
-## Estructura del Repositorio
-
-```text
-mobile/
-├── Backend/                 # API REST en Go + Fiber
-│   ├── cmd/api/main.go      # Servidor y endpoints
-│   ├── internal/            # Arquitectura limpia (config, db, handlers, middleware, models)
-│   ├── uploads/             # Almacenamiento local de archivos estáticos
-│   ├── Dockerfile           # Multi-stage build para Go
-│   ├── docker-compose.yml   # Orquestación de API y PostgreSQL
-│   └── README.md
-│
-├── Mobile/                  # Aplicación React Native
-│   ├── src/                 # Arquitectura MVVM estricta
-│   │   ├── models/          # DTOs e interfaces TypeScript
-│   │   ├── services/        # Axios, Storage, JWT Bearer interceptor
-│   │   ├── repositories/    # Repositorios y orquestación de datos
-│   │   ├── viewmodels/      # Hooks reactivos (loading, error, estados)
-│   │   ├── views/           # Pantallas (Dashboard, CRUD, Benchmark, Upload)
-│   │   ├── navigation/      # React Navigation (Tabs + Stack)
-│   │   └── context/         # AuthContext
-│   ├── App.tsx
-│   └── README.md
-│
-└── Documentacion/           # Documentación técnica requerida
-    ├── arquitectura.md      # Diagramas y explicación de MVVM y Go Fiber
-    ├── endpoints.md         # Catálogo exhaustivo de endpoints REST y respuestas
-    ├── concurrencia.md      # Análisis teórico y práctico de concurrencia y paralelismo
-    └── guia_exposicion.md   # Guion paso a paso y respuestas a preguntas del profesor
-```
-
----
 
 ## Inicio Rápido
 
