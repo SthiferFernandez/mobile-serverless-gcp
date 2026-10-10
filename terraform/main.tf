@@ -211,11 +211,6 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
-        name  = "PORT"
-        value = "8080"
-      }
-
-      env {
         name  = "DB_TYPE"
         value = local.computed_db_url != "" ? "postgres" : "sqlite"
       }

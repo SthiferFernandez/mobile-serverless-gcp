@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: "Mobile Backend REST API"
-  description: "API Gateway para la Aplicación Móvil con Backend Go Fiber y Cloud Run"
+  description: "API Gateway para la Aplicacion Movil con Backend Go Fiber y Cloud Run"
   version: "1.0.0"
 schemes:
   - "https"
@@ -19,18 +19,18 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/health
       responses:
-        200:
+        "200":
           description: "Servidor Go Fiber activo"
 
   /login:
     post:
-      summary: "Inicio de sesión de usuario"
+      summary: "Inicio de sesion de usuario"
       operationId: "loginUser"
       x-google-backend:
         address: ${cloud_run_url}/login
       responses:
-        200:
-          description: "Autenticación exitosa y retorno de JWT"
+        "200":
+          description: "Autenticacion exitosa y retorno de JWT"
 
   /register:
     post:
@@ -39,8 +39,8 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/register
       responses:
-        201:
-          description: "Usuario registrado con éxito"
+        "201":
+          description: "Usuario registrado con exito"
 
   /profile:
     get:
@@ -49,7 +49,7 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/profile
       responses:
-        200:
+        "200":
           description: "Datos del perfil autenticado"
 
   /users:
@@ -59,7 +59,7 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/users
       responses:
-        200:
+        "200":
           description: "Listado de usuarios"
     post:
       summary: "Crear un nuevo usuario"
@@ -67,7 +67,7 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/users
       responses:
-        201:
+        "201":
           description: "Usuario creado exitosamente"
 
   /users/{id}:
@@ -80,9 +80,10 @@ paths:
           required: true
           type: "string"
       x-google-backend:
-        address: ${cloud_run_url}/users/{id}
+        address: ${cloud_run_url}/users
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
-        200:
+        "200":
           description: "Detalle del usuario"
     put:
       summary: "Actualizar usuario por ID"
@@ -93,9 +94,10 @@ paths:
           required: true
           type: "string"
       x-google-backend:
-        address: ${cloud_run_url}/users/{id}
+        address: ${cloud_run_url}/users
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
-        200:
+        "200":
           description: "Usuario actualizado exitosamente"
     delete:
       summary: "Eliminar usuario por ID"
@@ -106,9 +108,10 @@ paths:
           required: true
           type: "string"
       x-google-backend:
-        address: ${cloud_run_url}/users/{id}
+        address: ${cloud_run_url}/users
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
-        200:
+        "200":
           description: "Usuario eliminado exitosamente"
 
   /upload:
@@ -118,8 +121,24 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/upload
       responses:
-        200:
+        "200":
           description: "Archivo subido correctamente"
+
+  /upload/{id}:
+    delete:
+      summary: "Eliminar archivo por ID"
+      operationId: "deleteFile"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "string"
+      x-google-backend:
+        address: ${cloud_run_url}/upload
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        "200":
+          description: "Archivo eliminado"
 
   /files:
     get:
@@ -128,18 +147,18 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/files
       responses:
-        200:
+        "200":
           description: "Lista de archivos"
 
   /stats:
     get:
-      summary: "Métricas del Dashboard"
+      summary: "Metricas del Dashboard"
       operationId: "getStats"
       x-google-backend:
         address: ${cloud_run_url}/stats
       responses:
-        200:
-          description: "Métricas y conteos"
+        "200":
+          description: "Metricas y conteos"
 
   /notifications:
     get:
@@ -148,40 +167,21 @@ paths:
       x-google-backend:
         address: ${cloud_run_url}/notifications
       responses:
-        200:
+        "200":
           description: "Lista de notificaciones"
 
-  /{proxy+}:
-    x-google-backend:
-      address: ${cloud_run_url}
-      path_translation: APPEND_PATH_TO_ADDRESS
+  /benchmark/task/{id}:
     get:
-      summary: "Proxy comodín GET"
-      operationId: "proxyGet"
+      summary: "Tarea de concurrencia benchmark"
+      operationId: "benchmarkTask"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "string"
+      x-google-backend:
+        address: ${cloud_run_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       responses:
-        default:
-          description: "Respuesta redirigida"
-    post:
-      summary: "Proxy comodín POST"
-      operationId: "proxyPost"
-      responses:
-        default:
-          description: "Respuesta redirigida"
-    put:
-      summary: "Proxy comodín PUT"
-      operationId: "proxyPut"
-      responses:
-        default:
-          description: "Respuesta redirigida"
-    delete:
-      summary: "Proxy comodín DELETE"
-      operationId: "proxyDelete"
-      responses:
-        default:
-          description: "Respuesta redirigida"
-    options:
-      summary: "Preflight CORS"
-      operationId: "proxyOptions"
-      responses:
-        204:
-          description: "Preflight CORS exitoso"
+        "200":
+          description: "Resultado de tarea concurrente"
