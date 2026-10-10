@@ -1,0 +1,180 @@
+name: CI/CD Pipeline - Serverless GCP Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  ARTIFACT_REGISTRY: ${{ secrets.ARTIFACT_REGISTRY || 'mobile-repo' }}
+  CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE || 'mobile-backend-api' }}
+  IMAGE_NAME: backend-api
+
+jobs:
+  # ==============================================================================
+  # 1. BACKEND: BUILD & TEST
+  # ==============================================================================
+  backend-ci:
+    name: Backend - Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: Backend/go.sum
+
+      - name: Instalar Dependencias
+        run: |
+          cd Backend
+          go mod download
+
+      - name: Ejecutar Pruebas (Test)
+        run: |
+          cd Backend
+          go test -v ./...
+
+      - name: Construir Proyecto (Build)
+        run: |
+          cd Backend
+          CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o api ./cmd/api
+
+  # ==============================================================================
+  # 2. DOCKER & ARTIFACT REGISTRY
+  # ==============================================================================
+  docker-artifact-registry:
+    name: Docker Build & Push Artifact Registry
+    needs: [backend-ci]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configurar Docker para Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Verificar o Crear Repositorio Artifact Registry
+        run: |
+          gcloud artifacts repositories describe ${{ env.ARTIFACT_REGISTRY }} \
+            --location=${{ env.GCP_REGION }} \
+            --project=${{ env.GCP_PROJECT_ID }} || \
+          gcloud artifacts repositories create ${{ env.ARTIFACT_REGISTRY }} \
+            --repository-format=docker \
+            --location=${{ env.GCP_REGION }} \
+            --description="Docker repository para mobile backend" \
+            --project=${{ env.GCP_PROJECT_ID }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir y Publicar Imagen Docker (Push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Backend
+          file: ./Backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  # ==============================================================================
+  # 3. TERRAFORM (INFRAESTRUCTURA COMO CÓDIGO)
+  # ==============================================================================
+  terraform:
+    name: Terraform - Plan & Apply
+    needs: [docker-artifact-registry]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    env:
+      TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+      TF_VAR_region: ${{ secrets.GCP_REGION || 'us-central1' }}
+      TF_VAR_repository_id: ${{ secrets.ARTIFACT_REGISTRY || 'mobile-repo' }}
+      TF_VAR_service_name: ${{ secrets.CLOUD_RUN_SERVICE || 'mobile-backend-api' }}
+      TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+      TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
+      TF_VAR_image_tag: ${{ github.sha }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+  # ==============================================================================
+  # 4. DESPLIEGUE FINAL (CLOUD RUN & VERIFICACIÓN)
+  # ==============================================================================
+  deploy:
+    name: Deploy - Cloud Run & Summary
+    needs: [terraform]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Desplegar en Cloud Run (gcloud run deploy)
+        run: |
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image "$IMAGE_URI" \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "PORT=8080,DB_TYPE=postgres,DATABASE_URL=${{ secrets.DATABASE_URL }},JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --project ${{ env.GCP_PROJECT_ID }}
+
+      - name: Obtener URLs de Acceso y Resumen de Despliegue
+        run: |
+          echo "=================================================="
+          echo "🚀 DESPLIEGUE SERVERLESS EXITOSO EN GOOGLE CLOUD"
+          echo "=================================================="
+          CLOUD_RUN_URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --project ${{ env.GCP_PROJECT_ID }} \
+            --format 'value(status.url)')
+          echo "URL Cloud Run: $CLOUD_RUN_URL"
+          echo "Health Check: $CLOUD_RUN_URL/health"
+          echo "=================================================="
