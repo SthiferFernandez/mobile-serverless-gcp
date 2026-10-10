@@ -10,7 +10,7 @@
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del Repositorio
 
 ```text
 mobile/
@@ -43,7 +43,7 @@ mobile/
 
 ---
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### 1. Iniciar el Backend (Go Fiber)
 ```bash
@@ -55,6 +55,7 @@ docker compose up -d
 El servidor escuchará en `http://localhost:8080` y sembrará los usuarios por defecto:
 - **Email:** `sthifer@test.com`
 - **Contraseña:** `admin123`
+- NO SE METAN A PUNCHAR
 
 ### 2. Iniciar la Aplicación Móvil (React Native)
 ```bash
