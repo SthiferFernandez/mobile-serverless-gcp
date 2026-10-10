@@ -28,6 +28,7 @@ func InitDB(cfg *config.Config) *gorm.DB {
 		DB, err = gorm.Open(postgres.Open(cfg.DatabaseURL), gormConfig)
 		if err != nil {
 			log.Printf("Failed to connect via DATABASE_URL: %v. Falling back...", err)
+			DB = nil
 		}
 	}
 
@@ -40,6 +41,7 @@ func InitDB(cfg *config.Config) *gorm.DB {
 		DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
 		if err != nil {
 			log.Printf("Failed to connect to PostgreSQL: %v. Falling back to local SQLite...", err)
+			DB = nil
 		}
 	}
 

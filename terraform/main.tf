@@ -133,7 +133,7 @@ resource "google_sql_user" "user" {
 
 locals {
   computed_db_url = (var.database_url != "" && var.database_url != "sqlite") ? var.database_url : (
-    var.enable_cloud_sql ? "postgres://${var.db_user}:${var.db_password}@${google_sql_database_instance.postgres[0].public_ip_address}:5432/${var.db_name}?sslmode=disable" : ""
+    var.enable_cloud_sql ? "host=${google_sql_database_instance.postgres[0].public_ip_address} user=${var.db_user} password=${var.db_password} dbname=${var.db_name} port=5432 sslmode=disable" : ""
   )
 }
 

@@ -178,6 +178,8 @@ jobs:
         run: |
           terraform state show google_artifact_registry_repository.mobile_repo >/dev/null 2>&1 || \
           terraform import google_artifact_registry_repository.mobile_repo projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/repositories/${{ env.ARTIFACT_REGISTRY }} || true
+          terraform state show google_cloud_run_v2_service.backend >/dev/null 2>&1 || \
+          terraform import google_cloud_run_v2_service.backend projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/services/${{ env.CLOUD_RUN_SERVICE }} || true
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
