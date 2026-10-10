@@ -20,9 +20,9 @@ export const DEFAULT_LAN_URL = metroHost
   ? `http://${metroHost}:8080`
   : 'http://192.168.60.88:8080';
 export const DEFAULT_CLOUD_RUN_URL = 'https://mobile-backend-api-414714685541.us-central1.run.app';
+export const DEFAULT_API_GATEWAY_URL = 'https://mobile-api-gateway-5aimezc5.uc.gateway.dev';
 
-export const DEFAULT_BASE_URL =
-  Platform.OS === 'android' ? DEFAULT_EMULATOR_URL : 'http://localhost:8080';
+export const DEFAULT_BASE_URL = DEFAULT_CLOUD_RUN_URL;
 
 export class StorageService {
   static async setToken(token: string): Promise<void> {

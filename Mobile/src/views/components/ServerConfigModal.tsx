@@ -139,6 +139,31 @@ export const ServerConfigModal: React.FC<Props> = ({ visible, onClose }) => {
               </View>
             </TouchableOpacity>
 
+            {/* ACCESO RÁPIDO PARA GOOGLE API GATEWAY */}
+            <TouchableOpacity
+              style={[
+                styles.presetButton,
+                styles.presetFeatured,
+                {
+                  backgroundColor: colors.primaryLight,
+                  borderColor: '#34A853',
+                },
+              ]}
+              onPress={() => setPreset('https://mobile-api-gateway-5aimezc5.uc.gateway.dev')}
+            >
+              <View style={styles.presetRow}>
+                <Ionicons name="shield-checkmark-outline" size={18} color="#34A853" />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.presetTitle, { color: colors.text }]}>
+                    Google Cloud API Gateway
+                  </Text>
+                  <Text style={[styles.presetSub, { color: '#34A853' }]} numberOfLines={1}>
+                    https://mobile-api-gateway-5aimezc5.uc.gateway.dev
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
             {/* ACCESO RÁPIDO PARA EMULADOR PIXEL_7 */}
             <TouchableOpacity
               style={[
