@@ -5,7 +5,7 @@ import { User } from '../models/user.model';
 
 const TOKEN_KEY = '@mobile_jwt_token';
 const USER_KEY = '@mobile_user_data';
-const BASE_URL_KEY = '@mobile_api_base_url';
+const BASE_URL_KEY = '@mobile_api_cloud_url_v2';
 
 // Extraer la IP dinámica de la máquina anfitriona donde corre Metro
 const metroHost = Constants.expoConfig?.hostUri
@@ -68,15 +68,14 @@ export class StorageService {
 
   /**
    * PING INTELIGENTE:
-   * Prueba automáticamente cuál URL responde en el puerto 8080
-   * (10.0.2.2 para emuladores, o la IP Wi-Fi de Metro para teléfonos)
+   * Prueba automáticamente Google Cloud Run, API Gateway y servidores locales
    */
   static async autoDetectWorkingUrl(): Promise<string> {
     const candidates = [
-      DEFAULT_CLOUD_RUN_URL, // Google Cloud Run Serverless en GCP
-      DEFAULT_EMULATOR_URL,  // http://10.0.2.2:8080 (ideal para Pixel_7 / Emulador)
-      DEFAULT_LAN_URL,       // http://192.168.60.88:8080 (ideal para Wi-Fi)
-      'http://192.168.60.88:8080',
+      DEFAULT_CLOUD_RUN_URL,   // Google Cloud Run Serverless en GCP
+      DEFAULT_API_GATEWAY_URL, // Google Cloud API Gateway en GCP
+      DEFAULT_EMULATOR_URL,    // http://10.0.2.2:8080 (ideal para Pixel_7 / Emulador)
+      DEFAULT_LAN_URL,         // http://192.168.60.88:8080 (ideal para Wi-Fi)
       'http://10.0.2.2:8080',
       'http://localhost:8080',
     ];
@@ -87,7 +86,7 @@ export class StorageService {
     for (const url of uniqueCandidates) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
 
         const res = await fetch(`${url}/health`, {
           signal: controller.signal,
@@ -105,7 +104,6 @@ export class StorageService {
       }
     }
 
-    // Si ninguno respondió al ping, usar por defecto según plataforma
-    return Platform.OS === 'android' ? DEFAULT_EMULATOR_URL : DEFAULT_LAN_URL;
+    return DEFAULT_CLOUD_RUN_URL;
   }
 }
