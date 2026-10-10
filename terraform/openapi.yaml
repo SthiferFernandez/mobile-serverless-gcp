@@ -1,0 +1,187 @@
+swagger: "2.0"
+info:
+  title: "Mobile Backend REST API"
+  description: "API Gateway para la Aplicación Móvil con Backend Go Fiber y Cloud Run"
+  version: "1.0.0"
+schemes:
+  - "https"
+consumes:
+  - "application/json"
+  - "multipart/form-data"
+produces:
+  - "application/json"
+
+paths:
+  /health:
+    get:
+      summary: "Health Check"
+      operationId: "getHealth"
+      x-google-backend:
+        address: ${cloud_run_url}/health
+      responses:
+        200:
+          description: "Servidor Go Fiber activo"
+
+  /login:
+    post:
+      summary: "Inicio de sesión de usuario"
+      operationId: "loginUser"
+      x-google-backend:
+        address: ${cloud_run_url}/login
+      responses:
+        200:
+          description: "Autenticación exitosa y retorno de JWT"
+
+  /register:
+    post:
+      summary: "Registro de nuevo usuario"
+      operationId: "registerUser"
+      x-google-backend:
+        address: ${cloud_run_url}/register
+      responses:
+        201:
+          description: "Usuario registrado con éxito"
+
+  /profile:
+    get:
+      summary: "Obtener perfil del usuario autenticado"
+      operationId: "getProfile"
+      x-google-backend:
+        address: ${cloud_run_url}/profile
+      responses:
+        200:
+          description: "Datos del perfil autenticado"
+
+  /users:
+    get:
+      summary: "Listar todos los usuarios"
+      operationId: "getUsers"
+      x-google-backend:
+        address: ${cloud_run_url}/users
+      responses:
+        200:
+          description: "Listado de usuarios"
+    post:
+      summary: "Crear un nuevo usuario"
+      operationId: "createUser"
+      x-google-backend:
+        address: ${cloud_run_url}/users
+      responses:
+        201:
+          description: "Usuario creado exitosamente"
+
+  /users/{id}:
+    get:
+      summary: "Obtener usuario por ID"
+      operationId: "getUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "string"
+      x-google-backend:
+        address: ${cloud_run_url}/users/{id}
+      responses:
+        200:
+          description: "Detalle del usuario"
+    put:
+      summary: "Actualizar usuario por ID"
+      operationId: "updateUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "string"
+      x-google-backend:
+        address: ${cloud_run_url}/users/{id}
+      responses:
+        200:
+          description: "Usuario actualizado exitosamente"
+    delete:
+      summary: "Eliminar usuario por ID"
+      operationId: "deleteUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "string"
+      x-google-backend:
+        address: ${cloud_run_url}/users/{id}
+      responses:
+        200:
+          description: "Usuario eliminado exitosamente"
+
+  /upload:
+    post:
+      summary: "Subir archivo o foto"
+      operationId: "uploadFile"
+      x-google-backend:
+        address: ${cloud_run_url}/upload
+      responses:
+        200:
+          description: "Archivo subido correctamente"
+
+  /files:
+    get:
+      summary: "Listar archivos subidos"
+      operationId: "getFiles"
+      x-google-backend:
+        address: ${cloud_run_url}/files
+      responses:
+        200:
+          description: "Lista de archivos"
+
+  /stats:
+    get:
+      summary: "Métricas del Dashboard"
+      operationId: "getStats"
+      x-google-backend:
+        address: ${cloud_run_url}/stats
+      responses:
+        200:
+          description: "Métricas y conteos"
+
+  /notifications:
+    get:
+      summary: "Notificaciones del usuario"
+      operationId: "getNotifications"
+      x-google-backend:
+        address: ${cloud_run_url}/notifications
+      responses:
+        200:
+          description: "Lista de notificaciones"
+
+  /{proxy+}:
+    x-google-backend:
+      address: ${cloud_run_url}
+      path_translation: APPEND_PATH_TO_ADDRESS
+    get:
+      summary: "Proxy comodín GET"
+      operationId: "proxyGet"
+      responses:
+        default:
+          description: "Respuesta redirigida"
+    post:
+      summary: "Proxy comodín POST"
+      operationId: "proxyPost"
+      responses:
+        default:
+          description: "Respuesta redirigida"
+    put:
+      summary: "Proxy comodín PUT"
+      operationId: "proxyPut"
+      responses:
+        default:
+          description: "Respuesta redirigida"
+    delete:
+      summary: "Proxy comodín DELETE"
+      operationId: "proxyDelete"
+      responses:
+        default:
+          description: "Respuesta redirigida"
+    options:
+      summary: "Preflight CORS"
+      operationId: "proxyOptions"
+      responses:
+        204:
+          description: "Preflight CORS exitoso"

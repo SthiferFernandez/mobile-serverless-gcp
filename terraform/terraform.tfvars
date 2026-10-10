@@ -1,0 +1,10 @@
+project_id       = "semana-3-sthifer"
+region           = "us-central1"
+service_name     = "mobile-backend-api"
+repository_id    = "mobile-repo"
+image_tag        = "latest"
+db_name          = "mobile_db"
+db_user          = "postgres"
+db_password      = "MobilePostgres2026#"
+jwt_secret       = "super_secret_jwt_key_utesa_2026"
+enable_cloud_sql = true
