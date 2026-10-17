@@ -104,10 +104,9 @@ export const ConcurrencyBenchmarkScreen = () => {
             </Text>
           </View>
 
-          <Text style={styles.heroTitle}>Módulo de Evaluación Práctica</Text>
+          <Text style={styles.heroTitle}>Prueba de Velocidad en Vivo</Text>
           <Text style={styles.heroDesc}>
-            Ejecuta 5 operaciones independientes de procesamiento/comunicación I/O con el backend
-            Go Fiber y compara el tiempo de ejecución secuencial vs concurrente.
+            Compara en segundos qué tan rápido es pedirle 5 cosas al servidor todas al mismo tiempo frente a pedirlas una por una.
           </Text>
 
           <TouchableOpacity

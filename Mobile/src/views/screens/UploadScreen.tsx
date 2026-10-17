@@ -100,10 +100,10 @@ export const UploadScreen = () => {
           ]}
         >
           <Text style={[styles.cardTitle, { color: colors.text }]}>
-            Módulo de Subida (POST /upload)
+            Subir Fotos y Archivos
           </Text>
           <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>
-            Envío de archivos multipart/form-data validados y persistidos en base de datos.
+            Elige una o varias imágenes de tu teléfono para guardarlas de forma segura en Google Cloud Storage.
           </Text>
 
           <View style={styles.buttonRow}>

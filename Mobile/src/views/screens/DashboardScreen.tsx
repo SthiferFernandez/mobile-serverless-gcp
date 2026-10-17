@@ -104,8 +104,8 @@ export const DashboardScreen = ({ navigation }: any) => {
 
           <Text style={[styles.concurrencyDesc, { color: colors.textSecondary }]}>
             {mode === 'concurrent'
-              ? '4 endpoints independientes (Users, Profile, Stats, Notifications) consumidos simultáneamente con Promise.all().'
-              : 'Los 4 endpoints fueron consumidos uno por uno de forma secuencial.'}
+              ? 'Pide toda la información (perfil, usuarios, estadísticas y avisos) al mismo tiempo para que la pantalla cargue mucho más rápido.'
+              : 'Pide la información paso a paso, esperando que termine una antes de empezar la siguiente.'}
           </Text>
 
           <View style={styles.actionRow}>

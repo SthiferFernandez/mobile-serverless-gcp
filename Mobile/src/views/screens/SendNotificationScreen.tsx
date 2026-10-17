@@ -68,13 +68,7 @@ export const SendNotificationScreen = () => {
             </View>
 
             <Text style={[styles.infoDescription, { color: colors.textSecondary }]}>
-              Al presionar enviar, el mensaje viaja al backend en Cloud Run, se publica en el Topic{' '}
-              <Text style={{ fontWeight: 'bold', color: colors.text }}>notification-topic</Text> y
-              activa asíncronamente el servicio{' '}
-              <Text style={{ fontWeight: 'bold', color: colors.accent }}>
-                notification-cloud-run
-              </Text>{' '}
-              para despachar el correo y registrarlo en Cloud Logging.
+              Al presionar enviar, el mensaje entra a una cola en la nube (Pub/Sub) que activa el servicio de correos para que llegue directo a tu bandeja de Gmail sin poner lenta la aplicación.
             </Text>
           </View>
 
