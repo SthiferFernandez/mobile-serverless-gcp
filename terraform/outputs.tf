@@ -37,3 +37,19 @@ output "apigateway_service_account" {
   description = "Cuenta de servicio de API Gateway"
   value       = google_service_account.gateway_sa.email
 }
+
+output "pubsub_topic_id" {
+  description = "ID del Topic de Pub/Sub para notificaciones"
+  value       = google_pubsub_topic.notification_topic.id
+}
+
+output "pubsub_subscription_id" {
+  description = "ID de la Suscripción Push de Pub/Sub"
+  value       = google_pubsub_subscription.notification_sub.id
+}
+
+output "notification_cloud_run_url" {
+  description = "URL asignada a la Cloud Run de Notificaciones"
+  value       = google_cloud_run_v2_service.notification_service.uri
+}
+

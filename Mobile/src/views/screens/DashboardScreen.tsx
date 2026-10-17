@@ -296,6 +296,19 @@ export const DashboardScreen = ({ navigation }: any) => {
               Test Rendimiento
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.shortcutBtn,
+              { backgroundColor: colors.card, borderColor: '#34A853', borderWidth: 1.5 },
+            ]}
+            onPress={() => navigation.navigate('NotificationsTab')}
+          >
+            <Ionicons name="mail-outline" size={20} color="#34A853" />
+            <Text style={[styles.shortcutText, { color: '#34A853', fontWeight: 'bold' }]}>
+              Enviar Pub/Sub
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* NOTIFICACIONES CONCURRENTES (GET /notifications) */}

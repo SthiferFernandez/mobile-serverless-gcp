@@ -18,6 +18,7 @@ import { UserDetailScreen } from '../views/screens/UserDetailScreen';
 import { UserFormScreen } from '../views/screens/UserFormScreen';
 import { UploadScreen } from '../views/screens/UploadScreen';
 import { ConcurrencyBenchmarkScreen } from '../views/screens/ConcurrencyBenchmarkScreen';
+import { SendNotificationScreen } from '../views/screens/SendNotificationScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -40,7 +41,7 @@ const MainTabs = () => {
           height: 62,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
         },
         tabBarIcon: ({ focused, color, size }) => {
@@ -54,6 +55,8 @@ const MainTabs = () => {
             iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
           } else if (route.name === 'BenchmarkTab') {
             iconName = focused ? 'speedometer' : 'speedometer-outline';
+          } else if (route.name === 'NotificationsTab') {
+            iconName = focused ? 'mail' : 'mail-outline';
           }
 
           return <Ionicons name={iconName} size={22} color={color} />;
@@ -79,6 +82,11 @@ const MainTabs = () => {
         name="BenchmarkTab"
         component={ConcurrencyBenchmarkScreen}
         options={{ tabBarLabel: 'Concurrencia' }}
+      />
+      <Tab.Screen
+        name="NotificationsTab"
+        component={SendNotificationScreen}
+        options={{ tabBarLabel: 'Notificar' }}
       />
     </Tab.Navigator>
   );

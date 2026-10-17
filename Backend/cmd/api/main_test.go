@@ -3,10 +3,12 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"backend/internal/config"
 	"backend/internal/database"
+	"backend/internal/handlers"
 	"backend/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
@@ -68,3 +70,35 @@ func TestDatabaseSQLiteInit(t *testing.T) {
 		t.Fatalf("Database initialization failed, got nil")
 	}
 }
+
+func TestSendNotificationEndpoint(t *testing.T) {
+	cfg := config.LoadConfig()
+	app := fiber.New()
+	notifHandler := handlers.NewNotificationHandler(cfg)
+	app.Post("/notifications/send", notifHandler.SendNotification)
+
+	// Prueba con payload válido
+	validBody := `{"email":"usuario@correo.com","subject":"Prueba PUB/SUB","message":"Hola desde GCP Serverless"}`
+	req := httptest.NewRequest("POST", "/notifications/send", strings.NewReader(validBody))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req, -1)
+	if err != nil {
+		t.Fatalf("Error testing /notifications/send: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", resp.StatusCode)
+	}
+
+	// Prueba con validación fallida (faltan campos)
+	invalidBody := `{"email":"","subject":"","message":""}`
+	reqInvalid := httptest.NewRequest("POST", "/notifications/send", strings.NewReader(invalidBody))
+	reqInvalid.Header.Set("Content-Type", "application/json")
+	respInvalid, err := app.Test(reqInvalid, -1)
+	if err != nil {
+		t.Fatalf("Error testing invalid /notifications/send: %v", err)
+	}
+	if respInvalid.StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected status 400 for empty fields, got %d", respInvalid.StatusCode)
+	}
+}
+

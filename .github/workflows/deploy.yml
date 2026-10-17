@@ -35,16 +35,22 @@ jobs:
         run: |
           cd Backend
           go mod download
+          cd ../Notifications
+          go mod download || true
 
       - name: Ejecutar Pruebas (Test)
         run: |
           cd Backend
+          go test -v ./...
+          cd ../Notifications
           go test -v ./...
 
       - name: Construir Proyecto (Build)
         run: |
           cd Backend
           CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o api ./cmd/api
+          cd ../Notifications
+          CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o notification-service .
 
   # ==============================================================================
   # 2. DOCKER & ARTIFACT REGISTRY
@@ -103,7 +109,7 @@ jobs:
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Construir y Publicar Imagen Docker (Push)
+      - name: Construir y Publicar Imagen Docker Backend (Push)
         uses: docker/build-push-action@v5
         with:
           context: ./Backend
@@ -112,6 +118,17 @@ jobs:
           tags: |
             ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Construir y Publicar Imagen Docker Notificaciones (Push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Notifications
+          file: ./Notifications/Dockerfile
+          push: true
+          tags: |
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/notification-service:${{ github.sha }}
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/notification-service:latest
+
 
   # ==============================================================================
   # 3. TERRAFORM (INFRAESTRUCTURA COMO CÓDIGO)
@@ -236,6 +253,14 @@ jobs:
             --allow-unauthenticated \
             --project ${{ env.GCP_PROJECT_ID }}
 
+          NOTIF_IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY }}/notification-service:${{ github.sha }}"
+          gcloud run deploy notification-cloud-run \
+            --image "$NOTIF_IMAGE_URI" \
+            --region ${{ env.GCP_REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --project ${{ env.GCP_PROJECT_ID }}
+
       - name: Obtener URLs de Acceso y Resumen de Despliegue
         run: |
           echo "=================================================="
@@ -246,14 +271,24 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --project ${{ env.GCP_PROJECT_ID }} \
             --format 'value(status.url)')
+          NOTIF_URL=$(gcloud run services describe notification-cloud-run \
+            --platform managed \
+            --region ${{ env.GCP_REGION }} \
+            --project ${{ env.GCP_PROJECT_ID }} \
+            --format 'value(status.url)' || true)
           GATEWAY_URL=$(gcloud api-gateway gateways describe mobile-api-gateway \
             --location ${{ env.GCP_REGION }} \
             --project ${{ env.GCP_PROJECT_ID }} \
             --format 'value(defaultHostname)' || true)
-          echo "URL Cloud Run: $CLOUD_RUN_URL"
-          echo "Health Check:  $CLOUD_RUN_URL/health"
+          echo "URL Cloud Run Backend:      $CLOUD_RUN_URL"
+          echo "URL Notification Cloud Run: $NOTIF_URL"
+          echo "Health Check Backend:       $CLOUD_RUN_URL/health"
+          echo "Health Check Notif Service: $NOTIF_URL/health"
           if [ -n "$GATEWAY_URL" ]; then
-            echo "URL API Gateway: https://$GATEWAY_URL"
+            echo "URL API Gateway:            https://$GATEWAY_URL"
           fi
           echo "=================================================="
           curl -s "$CLOUD_RUN_URL/health" || true
+          echo ""
+          curl -s "$NOTIF_URL/health" || true
+

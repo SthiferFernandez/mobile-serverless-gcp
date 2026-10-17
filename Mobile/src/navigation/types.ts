@@ -11,4 +11,6 @@ export type MainTabParamList = {
   UsersTab: undefined;
   UploadTab: undefined;
   BenchmarkTab: undefined;
+  NotificationsTab: undefined;
 };
+

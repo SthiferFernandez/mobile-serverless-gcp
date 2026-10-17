@@ -8,3 +8,8 @@ db_user          = "postgres"
 db_password      = "MobilePostgres2026#"
 jwt_secret       = "super_secret_jwt_key_utesa_2026"
 enable_cloud_sql = true
+notification_service_name = "notification-cloud-run"
+notification_topic_name   = "notification-topic"
+notification_sub_name     = "notification-sub"
+notification_image_name   = "notification-service"
+

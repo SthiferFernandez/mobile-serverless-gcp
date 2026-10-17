@@ -66,3 +66,60 @@ variable "database_url" {
   default     = ""
   sensitive   = true
 }
+
+# Variables para Pub/Sub y Notification Cloud Run
+variable "notification_service_name" {
+  description = "Nombre de la nueva función Cloud Run de Notificaciones"
+  type        = string
+  default     = "notification-cloud-run"
+}
+
+variable "notification_topic_name" {
+  description = "Nombre del Topic de Pub/Sub para notificaciones"
+  type        = string
+  default     = "notification-topic"
+}
+
+variable "notification_sub_name" {
+  description = "Nombre de la suscripción Push de Pub/Sub hacia Cloud Run"
+  type        = string
+  default     = "notification-sub"
+}
+
+variable "notification_image_name" {
+  description = "Nombre de la imagen Docker para el servicio de notificaciones"
+  type        = string
+  default     = "notification-service"
+}
+
+variable "smtp_host" {
+  description = "Servidor SMTP para envío de correos reales (opcional)"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "Puerto del servidor SMTP"
+  type        = string
+  default     = "587"
+}
+
+variable "smtp_user" {
+  description = "Usuario SMTP"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_pass" {
+  description = "Contraseña SMTP"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "smtp_from" {
+  description = "Dirección de correo remitente"
+  type        = string
+  default     = "notificaciones@utesa-mobile.edu.do"
+}
+

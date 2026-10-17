@@ -12,7 +12,8 @@ locals {
     "secretmanager.googleapis.com",
     "cloudbuild.googleapis.com",
     "logging.googleapis.com",
-    "storage.googleapis.com"
+    "storage.googleapis.com",
+    "pubsub.googleapis.com"
   ]
 }
 
@@ -295,3 +296,120 @@ resource "google_api_gateway_gateway" "mobile_gw" {
 
   depends_on = [google_api_gateway_api_config.mobile_cfg]
 }
+
+# ==============================================================================
+# PUB/SUB & CLOUD RUN NOTIFICACIONES (DESACOPLADO)
+# ==============================================================================
+
+# 1. Topic de Pub/Sub
+resource "google_pubsub_topic" "notification_topic" {
+  name    = var.notification_topic_name
+  project = var.project_id
+
+  depends_on = [google_project_service.enabled_apis]
+}
+
+# 2. Permiso para que el backend publique en el Topic
+resource "google_pubsub_topic_iam_member" "backend_publisher" {
+  project = var.project_id
+  topic   = google_pubsub_topic.notification_topic.name
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cloudrun_sa.email}"
+}
+
+# 3. Service Account para invocar Cloud Run desde Pub/Sub Push
+resource "google_service_account" "pubsub_invoker_sa" {
+  account_id   = "pubsub-invoker-sa"
+  display_name = "PubSub Invoker Service Account"
+  project      = var.project_id
+  depends_on   = [google_project_service.enabled_apis]
+}
+
+# 4. Cloud Run de Notificaciones (notification-cloud-run)
+resource "google_cloud_run_v2_service" "notification_service" {
+  name     = var.notification_service_name
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = google_service_account.cloudrun_sa.email
+
+    containers {
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/${var.notification_image_name}:${var.image_tag}"
+
+      ports {
+        container_port = 8080
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "512Mi"
+        }
+      }
+
+      env {
+        name  = "SMTP_HOST"
+        value = var.smtp_host
+      }
+      env {
+        name  = "SMTP_PORT"
+        value = var.smtp_port
+      }
+      env {
+        name  = "SMTP_USER"
+        value = var.smtp_user
+      }
+      env {
+        name  = "SMTP_PASS"
+        value = var.smtp_pass
+      }
+      env {
+        name  = "SMTP_FROM"
+        value = var.smtp_from
+      }
+    }
+  }
+
+  depends_on = [
+    google_project_service.enabled_apis,
+    google_artifact_registry_repository.mobile_repo
+  ]
+}
+
+# 5. Permisos de Invocación para Cloud Run Notificaciones
+resource "google_cloud_run_v2_service_iam_member" "notification_pubsub_invoker" {
+  name     = google_cloud_run_v2_service.notification_service.name
+  location = google_cloud_run_v2_service.notification_service.location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.pubsub_invoker_sa.email}"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "notification_public_access" {
+  name     = google_cloud_run_v2_service.notification_service.name
+  location = google_cloud_run_v2_service.notification_service.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# 6. Suscripción Push de Pub/Sub -> Cloud Run Notificaciones
+resource "google_pubsub_subscription" "notification_sub" {
+  name  = var.notification_sub_name
+  topic = google_pubsub_topic.notification_topic.name
+
+  ack_deadline_seconds = 20
+
+  push_config {
+    push_endpoint = "${google_cloud_run_v2_service.notification_service.uri}/pubsub"
+
+    oidc_token {
+      service_account_email = google_service_account.pubsub_invoker_sa.email
+    }
+  }
+
+  depends_on = [
+    google_cloud_run_v2_service.notification_service,
+    google_service_account.pubsub_invoker_sa
+  ]
+}
+

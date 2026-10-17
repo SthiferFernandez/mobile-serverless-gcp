@@ -46,6 +46,7 @@ func main() {
 	userHandler := handlers.NewUserHandler()
 	uploadHandler := handlers.NewUploadHandler(cfg)
 	dashHandler := handlers.NewDashboardHandler()
+	notifHandler := handlers.NewNotificationHandler(cfg)
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
@@ -59,9 +60,11 @@ func main() {
 	// --- RUTAS PÚBLICAS ---
 	app.Post("/login", authHandler.Login)
 	app.Post("/register", authHandler.Register)
+	app.Post("/notifications/send", notifHandler.SendNotification)
 
 	// --- RUTAS PROTEGIDAS CON JWT ---
 	api := app.Group("/", middleware.Protected(cfg))
+	api.Post("/notifications/send", notifHandler.SendNotification)
 
 	// Perfil autenticado
 	api.Get("/profile", authHandler.GetProfile)

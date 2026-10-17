@@ -15,8 +15,10 @@ type Config struct {
 	DBUser      string
 	DBPass      string
 	DBName      string
-	BaseURL     string
-	DatabaseURL string
+	BaseURL        string
+	DatabaseURL    string
+	GCPProjectID   string
+	PubSubTopic    string
 }
 
 func LoadConfig() *Config {
@@ -32,18 +34,22 @@ func LoadConfig() *Config {
 	dbName := getEnv("DB_NAME", "mobile_db")
 	baseURL := getEnv("BASE_URL", "http://localhost:8080")
 	databaseURL := getEnv("DATABASE_URL", "")
+	gcpProjectID := getEnv("GCP_PROJECT_ID", "semana-3-sthifer")
+	pubsubTopic := getEnv("PUBSUB_TOPIC", "notification-topic")
 
 	return &Config{
-		Port:        port,
-		JWTSecret:   jwtSecret,
-		DBType:      dbType,
-		DBHost:      dbHost,
-		DBPort:      dbPort,
-		DBUser:      dbUser,
-		DBPass:      dbPass,
-		DBName:      dbName,
-		BaseURL:     baseURL,
-		DatabaseURL: databaseURL,
+		Port:         port,
+		JWTSecret:    jwtSecret,
+		DBType:       dbType,
+		DBHost:       dbHost,
+		DBPort:       dbPort,
+		DBUser:       dbUser,
+		DBPass:       dbPass,
+		DBName:       dbName,
+		BaseURL:      baseURL,
+		DatabaseURL:  databaseURL,
+		GCPProjectID: gcpProjectID,
+		PubSubTopic:  pubsubTopic,
 	}
 }
 

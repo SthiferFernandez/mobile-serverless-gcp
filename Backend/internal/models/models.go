@@ -76,3 +76,18 @@ type NotificationItem struct {
 	Type      string    `json:"type"` // info, success, warning
 	Timestamp time.Time `json:"timestamp"`
 }
+
+// Modelos para el envío desacoplado de Notificaciones vía Pub/Sub
+type SendNotificationRequest struct {
+	Email   string `json:"email"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
+}
+
+type SendNotificationResponse struct {
+	Status    string `json:"status"`
+	Message   string `json:"message"`
+	MessageID string `json:"messageId,omitempty"`
+	Topic     string `json:"topic,omitempty"`
+}
+

@@ -44,24 +44,24 @@ func (h *DashboardHandler) GetNotifications(c *fiber.Ctx) error {
 	notifications := []models.NotificationItem{
 		{
 			ID:        1,
-			Title:     "☁️ Cloud Run Serverless Activo",
-			Message:   "Backend Go Fiber desplegado en Google Cloud Run y conectado a Cloud SQL PostgreSQL.",
-			Type:      "success",
-			Timestamp: time.Now().Add(-1 * time.Minute),
-		},
-		{
-			ID:        2,
-			Title:     "🔐 Autenticación JWT Verificada",
-			Message:   "Tu sesión de Sthifer Fernandez (1222483) está activa mediante API Gateway.",
+			Title:     "Bienvenido al Sistema",
+			Message:   "Tu sesión ha sido iniciada correctamente con autenticación JWT.",
 			Type:      "success",
 			Timestamp: time.Now().Add(-5 * time.Minute),
 		},
 		{
-			ID:        3,
-			Title:     "⚡ Concurrencia y Cloud Storage Listos",
-			Message:   "Procesamiento paralelo y bucket de archivos sincronizados en GCP.",
+			ID:        2,
+			Title:     "Concurrencia Activa",
+			Message:   "Módulo de procesamiento paralelo listo para evaluación.",
 			Type:      "info",
 			Timestamp: time.Now().Add(-15 * time.Minute),
+		},
+		{
+			ID:        3,
+			Title:     "Almacenamiento Local",
+			Message:   "El directorio de subidas está sincronizado y listo para archivos.",
+			Type:      "info",
+			Timestamp: time.Now().Add(-1 * time.Hour),
 		},
 	}
 

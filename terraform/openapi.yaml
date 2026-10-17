@@ -185,3 +185,16 @@ paths:
       responses:
         "200":
           description: "Resultado de tarea concurrente"
+
+  /notifications/send:
+    post:
+      summary: "Publicar mensaje en Pub/Sub para envio de correo electronico"
+      operationId: "sendNotification"
+      x-google-backend:
+        address: ${cloud_run_url}/notifications/send
+      responses:
+        "200":
+          description: "Mensaje publicado en Pub/Sub exitosamente"
+        "400":
+          description: "Datos invalidos"
+
