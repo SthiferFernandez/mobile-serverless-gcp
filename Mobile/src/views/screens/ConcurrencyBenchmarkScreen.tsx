@@ -24,7 +24,6 @@ export const ConcurrencyBenchmarkScreen = () => {
   } = useBenchmarkViewModel();
 
   const { colors, isDark } = useTheme();
-  const [showTheory, setShowTheory] = useState(false);
 
   const renderTaskItem = (task: BenchmarkTaskItem, color: string) => {
     let icon = 'ellipse-outline';
@@ -318,112 +317,6 @@ export const ConcurrencyBenchmarkScreen = () => {
           </View>
         )}
 
-        {/* GUÍA DE RESPUESTAS TEÓRICAS PARA EXPOSICIÓN (PUNTO 8) */}
-        <View
-          style={[
-            styles.theoryCard,
-            { backgroundColor: colors.card, borderColor: colors.cardBorder },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.theoryHeader}
-            onPress={() => setShowTheory(!showTheory)}
-          >
-            <View style={styles.theoryTitleRow}>
-              <Ionicons name="school-outline" size={20} color={colors.accent} />
-              <Text style={[styles.theoryTitle, { color: colors.text }]}>
-                Preguntas y Respuestas para el Profesor
-              </Text>
-            </View>
-            <Ionicons
-              name={showTheory ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-
-          {showTheory && (
-            <View style={styles.theoryContent}>
-              <View
-                style={[
-                  styles.faqItem,
-                  { borderBottomColor: colors.cardBorder },
-                ]}
-              >
-                <Text style={[styles.faqQ, { color: colors.accent }]}>
-                  1. ¿Qué proceso paralelizaron?
-                </Text>
-                <Text style={[styles.faqA, { color: colors.textSecondary }]}>
-                  El consumo simultáneo de datos del Dashboard (Usuarios, Perfil, Estadísticas y
-                  Notificaciones), así como la batería de 5 tareas I/O de procesamiento con el servidor.
-                </Text>
-              </View>
-
-              <View
-                style={[
-                  styles.faqItem,
-                  { borderBottomColor: colors.cardBorder },
-                ]}
-              >
-                <Text style={[styles.faqQ, { color: colors.accent }]}>
-                  2. ¿Por qué puede ejecutarse concurrentemente?
-                </Text>
-                <Text style={[styles.faqA, { color: colors.textSecondary }]}>
-                  Porque son operaciones 100% independientes. Ninguna petición depende de los
-                  datos de retorno de otra para ejecutarse.
-                </Text>
-              </View>
-
-              <View
-                style={[
-                  styles.faqItem,
-                  { borderBottomColor: colors.cardBorder },
-                ]}
-              >
-                <Text style={[styles.faqQ, { color: colors.accent }]}>
-                  3. ¿Qué mecanismo utilizaron?
-                </Text>
-                <Text style={[styles.faqA, { color: colors.textSecondary }]}>
-                  En React Native se utilizó <Text style={{ fontWeight: 'bold' }}>Promise.all()</Text>{' '}
-                  junto con <Text style={{ fontWeight: 'bold' }}>async/await</Text>, coordinando las
-                  promesas a través del Event Loop y el motor JavaScript Hermes.
-                </Text>
-              </View>
-
-              <View
-                style={[
-                  styles.faqItem,
-                  { borderBottomColor: colors.cardBorder },
-                ]}
-              >
-                <Text style={[styles.faqQ, { color: colors.accent }]}>
-                  4. ¿Cuántas tareas/hilos utilizaron?
-                </Text>
-                <Text style={[styles.faqA, { color: colors.textSecondary }]}>
-                  5 tareas asíncronas concurrentes en la app móvil que despachan peticiones I/O no
-                  bloqueantes hacia el backend Go Fiber (que gestiona cada petición en una goroutine liviana).
-                </Text>
-              </View>
-
-              <View
-                style={[
-                  styles.faqItem,
-                  { borderBottomColor: colors.cardBorder },
-                ]}
-              >
-                <Text style={[styles.faqQ, { color: colors.accent }]}>
-                  5. ¿En qué situaciones NO conviene usar paralelismo?
-                </Text>
-                <Text style={[styles.faqA, { color: colors.textSecondary }]}>
-                  • Cuando hay dependencias de datos estrictas (ej. autenticarse para obtener el token
-                  antes de consultar datos protegidos).{'\n'}
-                  • Cuando el número masivo de peticiones satura el ancho de banda o los límites de conexión.{'\n'}
-                  • Cuando las tareas son puramente intensivas en CPU en el hilo principal de JS, lo cual bloquearía la UI.
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
       </ScrollView>
     </View>
   );
@@ -639,40 +532,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  theoryCard: {
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-  },
-  theoryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  theoryTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  theoryTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  theoryContent: {
-    marginTop: 14,
-    gap: 12,
-  },
-  faqItem: {
-    borderBottomWidth: 1,
-    paddingBottom: 8,
-  },
-  faqQ: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  faqA: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
 });
+
