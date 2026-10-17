@@ -259,7 +259,9 @@ jobs:
             --region ${{ env.GCP_REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --set-env-vars "SMTP_HOST=smtp.gmail.com,SMTP_PORT=587,SMTP_USER=sthifer1825@gmail.com,SMTP_PASS=tkhfouwctafuazrg,SMTP_FROM=sthifer1825@gmail.com" \
             --project ${{ env.GCP_PROJECT_ID }}
+
 
       - name: Obtener URLs de Acceso y Resumen de Despliegue
         run: |

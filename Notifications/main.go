@@ -167,6 +167,15 @@ func sendEmail(payload NotificationPayload) (string, error) {
 	smtpPass := os.Getenv("SMTP_PASS")
 	smtpFrom := os.Getenv("SMTP_FROM")
 
+	smtpHost = strings.TrimSpace(smtpHost)
+	smtpPort = strings.TrimSpace(smtpPort)
+	smtpUser = strings.TrimSpace(smtpUser)
+	smtpPass = strings.ReplaceAll(smtpPass, " ", "")
+	smtpFrom = strings.TrimSpace(smtpFrom)
+
+	if smtpFrom == "" {
+		smtpFrom = smtpUser
+	}
 	if smtpFrom == "" {
 		smtpFrom = "notificaciones@utesa-mobile.edu.do"
 	}
@@ -179,7 +188,7 @@ func sendEmail(payload NotificationPayload) (string, error) {
 
 	// Armar mensaje RFC 822
 	headers := make(map[string]string)
-	headers["From"] = smtpFrom
+	headers["From"] = fmt.Sprintf("UTESA Mobile <%s>", smtpFrom)
 	headers["To"] = payload.Email
 	headers["Subject"] = payload.Subject
 	headers["MIME-Version"] = "1.0"
