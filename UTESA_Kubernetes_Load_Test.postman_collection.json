@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "7b2e9104-5182-4112-9c32-b88301ec9b31",
+		"name": "UTESA - Kubernetes Load Test & API",
+		"description": "Colección oficial para pruebas de carga y rendimiento en Kubernetes (5 réplicas Backend + Frontend + PostgreSQL).\nEstudiante: Sthifer Odaliz Fernandez Cepeda (Matrícula: 1222483)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Health Check (K8s Pods Load Balance)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Tiempo de respuesta menor a 500ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"});",
+							"pm.test(\"Verificar motor y estudiante\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"OK\");",
+							"    pm.expect(jsonData.engine).to.eql(\"Go + Fiber v2\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:30080/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "30080",
+					"path": [
+						"health"
+					]
+				},
+				"description": "Endpoint de verificación de salud y balanceo entre los 5 pods del backend."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Login con PostgreSQL (Obtener JWT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"var jsonData = pm.response.json();",
+							"if (jsonData.token) {",
+							"    pm.environment.set(\"jwt_token\", jsonData.token);",
+							"    pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"sthifer@test.com\",\n    \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:30080/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "30080",
+					"path": [
+						"login"
+					]
+				},
+				"description": "Autenticación contra PostgreSQL con bcrypt para generar token JWT."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Obtener Usuarios (Query a PostgreSQL)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Retorna lista de usuarios de PostgreSQL\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:30080/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "30080",
+					"path": [
+						"users"
+					]
+				},
+				"description": "Consulta concurrente a la tabla de usuarios en PostgreSQL."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Benchmark de Concurrencia",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:30080/benchmark/task/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "30080",
+					"path": [
+						"benchmark",
+						"task",
+						"1"
+					]
+				},
+				"description": "Simula carga de procesamiento de tareas en paralelo."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token",
+			"value": ""
+		}
+	]
+}
+
