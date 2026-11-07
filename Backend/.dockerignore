@@ -1,0 +1,6 @@
+*.exe
+mobile_app.db
+uploads/*
+.git
+.env
+

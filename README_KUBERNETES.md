@@ -8,9 +8,9 @@
 ---
 
 ## 1. Descripción del Proyecto
-Este proyecto contiene una arquitectura desacoplada basada en microservicios, contenerizada con **Docker** y orquestada mediante **Kubernetes**:
-- **Backend API:** Desarrollado en **Go (Golang)** con el framework **Fiber v2**, base de datos SQLite/PostgreSQL y autenticación JWT.
-- **Frontend Web:** Desarrollado en **HTML5/CSS3/JavaScript** servido con un servidor web **Nginx (Alpine)** de alto rendimiento que actúa como proxy inverso hacia el servicio interno del backend en Kubernetes.
+Este proyecto contiene la arquitectura completa de la **Aplicación Móvil UTESA** basada en microservicios desacoplados, contenerizada con **Docker** y orquestada mediante **Kubernetes**:
+- **Backend API (Go Fiber v2):** Desarrollado en **Go (Golang)** de alto rendimiento con el framework **Fiber v2**, SQLite/PostgreSQL, autenticación JWT, endpoints de prueba de concurrencia (`/benchmark/task/:id`), CRUD de usuarios (`/users`), subida de archivos (`/upload`) y comprobación de salud (`/health`).
+- **Frontend Web de la Aplicación Móvil:** Interfaz cliente optimizada que refleja las pantallas de la aplicación móvil (Dashboard, Benchmark de Concurrencia secuencial vs concurrente, CRUD de usuarios y subida de archivos), empaquetada con un servidor web **Nginx (Alpine)** de alto rendimiento que actúa como proxy inverso hacia el servicio interno del backend en Kubernetes.
 - **Orquestación en Kubernetes:** Despliegue con alta disponibilidad, servicios ClusterIP/NodePort, escalabilidad horizontal (de 2 a 5 réplicas) y comprobaciones de salud (`livenessProbe` y `readinessProbe`).
 
 ---
