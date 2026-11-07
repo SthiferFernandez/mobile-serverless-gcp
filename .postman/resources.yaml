@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: faf0a249-04f9-4e20-87ee-b39722f66336
+
+localResources:
+  specs:
+    - ../terraform/openapi.yaml
